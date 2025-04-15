@@ -1,6 +1,6 @@
 import pandas as pd
 
-def main(path, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list):
+def preprocessing(path, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list):
     raw_data = pd.read_csv(path)
     clean_data = processing_data(raw_data, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list)
     return clean_data
@@ -242,4 +242,4 @@ if __name__ == "__main__":
     InternetService_list = {"dsl": 1, "fiber optic": 2, "no": 0}
     Contract_list = {"month-to-month": 0, "one year": 1, "two year": 2}
     paymentMethod_list = {"bank transfer (automatic)": 0, "credit card (automatic)": 1, "electronic check": 2, "mailed check": 3}
-    main(path, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list) 
+    preprocessing(path, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list) 
