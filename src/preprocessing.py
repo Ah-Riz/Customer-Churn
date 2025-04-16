@@ -46,6 +46,10 @@ def processing_data(raw_data, gender_list, MultipleLines_list, InternetService_l
     clean_data["Contract"] = clean_data["Contract"].str.lower().map(Contract_list)
     clean_data["PaperlessBilling"] = clean_data["PaperlessBilling"].str.lower().map({"yes": 1, "no": 0})
     clean_data["PaymentMethod"] = clean_data["PaymentMethod"].str.lower().map(paymentMethod_list)
+    clean_data["MonthlyCharges"] = pd.to_numeric(clean_data["MonthlyCharges"], errors='coerce')
+    clean_data["TotalCharges"] = pd.to_numeric(clean_data["TotalCharges"], errors='coerce')
+    clean_data["SeniorCitizen"] = clean_data["SeniorCitizen"].astype(int)
+    clean_data["tenure"] = pd.to_numeric(clean_data["tenure"], errors='coerce')
     clean_data["Churn"] = clean_data["Churn"].str.lower().map({"yes": 1, "no": 0})
 
     return clean_data
@@ -195,6 +199,8 @@ def check_PaymentMethod(payment_method, list):
         return None
 
 def check_Charges(charges):
+    charges = pd.to_numeric(charges, errors='coerce')
+
     null_indices = charges[charges.isna()].index
     negative_indices = charges[charges < 0].index
 
