@@ -1,13 +1,9 @@
 from preprocessing import preprocessing
-# from sklearn import preprocessing
 from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from sklearn import linear_model
-# from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_validate
-import numpy as np
 
 def main():
     path = "data/WA_Fn-UseC_-Telco-Customer-Churn.csv"
