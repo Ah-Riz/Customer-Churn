@@ -22,25 +22,9 @@ def main():
     data = data.to_numpy()[:, 1:]
 
     X = data[:, 1:-1]
-    # X = StandardScaler().fit_transform(X)
     y = data[:, -1].astype(int)
-    print("X",X[:5,:])
-    print("y",y[:5])
-    print(type(y[1]))
-    print("unique y", np.unique(y))
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # pipe = make_pipeline(
-    #     StandardScaler(),
-    #     RandomForestClassifier(
-    #         # n_estimators=100,
-    #         # max_depth=10,
-    #         # min_samples_split=2,
-    #         # min_samples_leaf=1,
-    #         # max_features='sqrt',
-    #         # random_state=42
-    #     )
-    # )
     pipe = make_pipeline(
         StandardScaler(),
         SVC(
