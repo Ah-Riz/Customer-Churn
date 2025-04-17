@@ -1,9 +1,11 @@
 from preprocessing import preprocessing
 from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_validate
+import joblib
+import os
 
 def main():
     path = "data/WA_Fn-UseC_-Telco-Customer-Churn.csv"
@@ -23,22 +25,23 @@ def main():
 
     pipe = make_pipeline(
         StandardScaler(),
-        SVC(
-            kernel='linear',
-            C=10,
-            gamma='scale',
-            random_state=42
-        )
+        SVC()
     )
+    param_grid = {
+        'svc__C': [0.1, 1, 10],
+        'svc__kernel': ['linear', 'rbf'],
+        'svc__gamma': ['scale', 'auto']
+    }
 
-    pipe.fit(X_train, y_train)
-    pipe.score(X_test, y_test)
-    scoring = ['accuracy', 'f1_macro', 'roc_auc']
-    cv_results = cross_validate(pipe, X_train, y_train, cv=5, scoring=scoring)
+    scoring = ['accuracy', 'f1_macro']
+    grid = GridSearchCV(pipe, param_grid, cv=5, scoring=scoring, n_jobs=-1, refit='f1_macro', return_train_score=True)
+    grid.fit(X_train, y_train)
+    grid.score(X_test, y_test)
+    print(f"Best f1_macro: {grid.best_score_:.4f}")
+    print(f"Best index: {grid.best_index_}")
+    print(f"Best parameters: {grid.best_params_}")
 
-    print("Cross-validation results:")
-    for metric in scoring:
-        print(f"{metric}: {cv_results[f'test_{metric}'].mean():.4f} ± {cv_results[f'test_{metric}'].std():.4f}")
+    joblib.dump(grid, os.path.join(os.path.abspath("models"),"model.pkl"))
 
 if __name__ == "__main__":
     main()
