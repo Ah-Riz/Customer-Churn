@@ -1,13 +1,37 @@
 import pandas as pd
+import json
+import os
 
-def preprocessing(path, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list):
+def preprocessing(path):
     raw_data = pd.read_csv(path)
-    clean_data = processing_data(raw_data, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list)
-    return clean_data
+    clean_data = processing_data(raw_data)
+    train_data, val_data = split_validation(clean_data, 0.8)
 
-def processing_data(raw_data, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list):
+    return train_data.to_numpy(), val_data.to_numpy()
+
+def split_validation(raw_data, frac):
+    # Split the data into training and testing sets
+    train_data = raw_data.sample(frac=frac, random_state=42)
+    val_data = raw_data.drop(train_data.index)
+    
+    return train_data, val_data
+
+def processing_data(raw_data):
+    with open(os.path.join(os.path.abspath("data"),"mappings.json"), 'r') as file:
+        mappings = json.load(file)
+    gender_list = mappings['gender_list']
+    MultipleLines_list = mappings['MultipleLines_list']
+    service_installation = mappings['service_installation']
+    InternetService_list = mappings['InternetService_list']
+    Contract_list = mappings['Contract_list']
+    paymentMethod_list = mappings['paymentMethod_list']
     row = {}
-    row["id_result"] = check_customerID(raw_data["customerID"])
+    try:
+        row["id_result"] = check_customerID(raw_data["customerID"])
+        raw_data = raw_data.drop(columns=["customerID"])
+    except Exception:
+        pass
+
     row["gender_result"] = check_gender(raw_data["gender"], gender_list.keys())
     row["seniorCitizen_result"] = check_SeniorCitizen(raw_data["SeniorCitizen"])
     row["partner_result"] = check_Partner(raw_data["Partner"])
@@ -27,7 +51,10 @@ def processing_data(raw_data, gender_list, MultipleLines_list, InternetService_l
     row["paymentMethod_result"] = check_PaymentMethod(raw_data["PaymentMethod"], paymentMethod_list.keys())
     row["monthlyCharges_result"] = check_Charges(raw_data["MonthlyCharges"])
     row["totalCharges_result"] = check_Charges(raw_data["TotalCharges"])
-    row["churn_result"] = check_Churn(raw_data["Churn"])
+    try:
+        row["churn_result"] = check_Churn(raw_data["Churn"])
+    except Exception:
+        pass
 
     clean_data = delete_rows(raw_data, row)
 
@@ -50,7 +77,10 @@ def processing_data(raw_data, gender_list, MultipleLines_list, InternetService_l
     clean_data["TotalCharges"] = pd.to_numeric(clean_data["TotalCharges"], errors='coerce')
     clean_data["SeniorCitizen"] = clean_data["SeniorCitizen"].astype(int)
     clean_data["tenure"] = pd.to_numeric(clean_data["tenure"], errors='coerce')
-    clean_data["Churn"] = clean_data["Churn"].str.lower().map({"yes": 1, "no": 0})
+    try:
+        clean_data["Churn"] = clean_data["Churn"].str.lower().map({"yes": 1, "no": 0})
+    except Exception:
+        pass
 
     return clean_data
 
@@ -240,12 +270,17 @@ def check_duplicate_rows(row):
     set_indices = list(set(indices))
     return set_indices
 
+def preprocess_input(data):
+    with open(os.path.join(os.path.abspath("data"),"columns.json"), 'r') as file:
+        columns = json.load(file)
+
+    data = pd.DataFrame([data], columns=columns)
+    data = processing_data(data)
+
+    return data.to_numpy()
+
+
 if __name__ == "__main__":
     path = "data/test.csv"
-    gender_list = {"female":0, "male":1}
-    MultipleLines_list = {"yes": 1, "no": 0, "no phone service": -1}
-    service_installation = {"yes": 1, "no": 0, "no internet service": -1}
-    InternetService_list = {"dsl": 1, "fiber optic": 2, "no": 0}
-    Contract_list = {"month-to-month": 0, "one year": 1, "two year": 2}
-    paymentMethod_list = {"bank transfer (automatic)": 0, "credit card (automatic)": 1, "electronic check": 2, "mailed check": 3}
-    preprocessing(path, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list) 
+
+    preprocessing(path) 

@@ -1,27 +1,23 @@
 from preprocessing import preprocessing
+import sklearn
 from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from sklearn.model_selection import cross_validate
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import make_scorer, accuracy_score, f1_score
 import joblib
 import os
 
-def main():
+sklearn.set_config(enable_metadata_routing=True)
+
+def training():
     path = "data/WA_Fn-UseC_-Telco-Customer-Churn.csv"
-    gender_list = {"female":0, "male":1}
-    MultipleLines_list = {"yes": 1, "no": 0, "no phone service": -1}
-    service_installation = {"yes": 1, "no": 0, "no internet service": -1}
-    InternetService_list = {"dsl": 1, "fiber optic": 2, "no": 0}
-    Contract_list = {"month-to-month": 0, "one year": 1, "two year": 2}
-    paymentMethod_list = {"bank transfer (automatic)": 0, "credit card (automatic)": 1, "electronic check": 2, "mailed check": 3}
 
-    data = preprocessing(path, gender_list, MultipleLines_list, InternetService_list, service_installation, Contract_list, paymentMethod_list)
-    data = data.to_numpy()[:, 1:]
-
-    X = data[:, 1:-1]
-    y = data[:, -1].astype(int)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    train_data, val_data = preprocessing(path)
+    X = train_data[:, :-1]
+    y = train_data[:, -1].astype(int)
+    X_val = val_data[:, :-1]
+    y_val = val_data[:, -1].astype(int)
 
     pipe = make_pipeline(
         StandardScaler(),
@@ -32,16 +28,31 @@ def main():
         'svc__kernel': ['linear', 'rbf'],
         'svc__gamma': ['scale', 'auto']
     }
+    
+    f1_scorer = make_scorer(f1_score, average='binary').set_score_request(sample_weight=True)
+    accuracy_scorer = make_scorer(accuracy_score).set_score_request(sample_weight=True)
+    scoring = {"accuracy":accuracy_scorer, "f1":f1_scorer}
+    # scoring = {"f1":f1_scorer}
 
-    scoring = ['accuracy', 'f1_macro']
-    grid = GridSearchCV(pipe, param_grid, cv=5, scoring=scoring, n_jobs=-1, refit='f1_macro', return_train_score=True)
-    grid.fit(X_train, y_train)
-    grid.score(X_test, y_test)
-    print(f"Best f1_macro: {grid.best_score_:.4f}")
-    print(f"Best index: {grid.best_index_}")
+    grid = GridSearchCV(pipe, param_grid, cv=5, n_jobs=-1, refit='f1', scoring=scoring, return_train_score=True)
+    grid.fit(X, y)
+    
     print(f"Best parameters: {grid.best_params_}")
+    print(f"Best F1 score (best cross-validation): {grid.best_score_:.4f}")
+
+    mean_accuracy = grid.cv_results_["mean_test_accuracy"]
+    mean_f1 = grid.cv_results_["mean_test_f1"]
+
+    print(f"Mean accuracy (Mean cross-validation): {mean_accuracy.mean():.4f}")
+    print(f"Mean F1 score (Mean cross-validation): {mean_f1.mean():.4f}")
+
+    val_predictions = grid.predict(X_val)
+    print(f"Accuracy validation: {accuracy_score(y_val, val_predictions):.4f}")
+    print(f"F1 score validation: {f1_score(y_val, val_predictions):.4f}")
 
     joblib.dump(grid, os.path.join(os.path.abspath("models"),"model.pkl"))
+    
+    return True
 
 if __name__ == "__main__":
-    main()
+    training()
