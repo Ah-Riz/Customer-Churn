@@ -279,7 +279,6 @@ def preprocess_input(data):
 
     return data.to_numpy()
 
-
 if __name__ == "__main__":
     path = "data/test.csv"
 
