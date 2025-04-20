@@ -32,4 +32,57 @@ This project provides a RESTful API for predicting customer churn using a machin
    ```
 
 2. **Set Up a Virtual Environtment**:
-    
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+
+3. **Install Dependencies**:
+    ```bash
+    pip install -r requirement.txt
+    ```
+
+4. **Ensure Directory Structure**:
+    ```bash
+    project/
+    ├── app/
+    │   ├── main.py
+    ├── src/
+    │   ├── preprocessing.py
+    ├── models/
+    │   ├── model.pkl
+    ├── data/
+    │   ├── mappings.json
+    │   ├── columns.json
+    ├── requirements.txt
+    └── [README.md]
+    ```
+
+## Usage
+
+1. **Start API Server**:
+    ```bash
+    uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ```
+
+2. **Access the API**:
+    - Open your browser.
+    - Root endpoint: http://127.0.0.1:8000/
+
+3. **Make a Prediction**:
+    - Send a #POST# request to http://127.0.0.1:8000/docs#/default/predict_predict__post with the required customer data.
+    **Example Request**:
+    ```bash
+    curl -X POST "http://127.0.0.1:8000/docs#/default/predict_predict__post" \
+    -H "Content-Type: application/json" \
+    -d '[
+        "Male", 0, "No", "Yes", 62, "Yes", "No", "DSL", "Yes", "Yes", "No", "No", "No", "No",
+        "One year", "No", "Bank transfer (automatic)", 56.15, 3487.95
+    ]'
+    ```
+    **Example Response**:
+    ```bash
+    {
+        "prediction": "no"
+    }
+    ```
