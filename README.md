@@ -23,6 +23,13 @@ This project provides a RESTful API for predicting customer churn using a machin
 
 ---
 
+## Dataset
+
+The dataset used to train the machine learning model is sourced from Kaggle:  
+[Telco Customer Churn Dataset](https://www.kaggle.com/datasets/blastchar/telco-customer-churn)
+
+---
+
 ## Installation
 
 1. **Clone the Repository**:
@@ -70,7 +77,8 @@ This project provides a RESTful API for predicting customer churn using a machin
     - Root endpoint: http://127.0.0.1:8000/
 
 3. **Make a Prediction**:
-    - Send a #POST# request to http://127.0.0.1:8000/docs#/default/predict_predict__post with the required customer data.
+    - Send a POST request to http://127.0.0.1:8000/docs#/default/predict_predict__post with the required customer data.
+    
     **Example Request**:
     ```bash
     curl -X POST "http://127.0.0.1:8000/docs#/default/predict_predict__post" \
