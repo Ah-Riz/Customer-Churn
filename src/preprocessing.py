@@ -17,6 +17,7 @@ def split_validation(raw_data, frac):
     return train_data, val_data
 
 def processing_data(raw_data):
+    print("raw_data", raw_data.shape)
     with open(os.path.join(os.path.abspath("data"),"mappings.json"), 'r') as file:
         mappings = json.load(file)
     gender_list = mappings['gender_list']
@@ -81,7 +82,7 @@ def processing_data(raw_data):
         clean_data["Churn"] = clean_data["Churn"].str.lower().map({"yes": 1, "no": 0})
     except Exception:
         pass
-
+    print("clean_data",clean_data.shape)
     return clean_data
 
 def check_customerID(customer_id):
